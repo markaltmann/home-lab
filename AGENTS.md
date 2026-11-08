@@ -83,6 +83,14 @@ Long-term run mode (note for agents):
 
 Do NOT commit secrets into the repo. Keep `.env` out of version control and use a secrets manager where possible.
 
+### YAML and JSON parser validation
+
+Whenever modifying or creating YAML (`.yml`, `.yaml`) or JSON (`.json`) files (including GitHub workflows in `.github/workflows/`, dependabot configuration, quadlets, or plugin configurations):
+- **Always validate syntax with a parser before completing changes.**
+- For YAML files: Run `ruby -e 'require "yaml"; Dir.glob(".github/**/*.yml").each { |f| YAML.load_file(f) }'` (or parse modified YAML file).
+- For JSON files: Run `python3 -m json.tool <file> > /dev/null` (or parse modified JSON file).
+- Never leave git conflict markers (`<<<<<<<`, `=======`, `>>>>>>>`) in files.
+
 
 ## Caddyfile conventions and gotchas
 
