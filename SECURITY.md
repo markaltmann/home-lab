@@ -9,7 +9,10 @@
 
 ## Reporting a Vulnerability
 
-Just open a ticket to raise a vulnerability. Keep in mind, that we already use OSV scanner, 
-scorecard and CodeQL scans to remediate possible problems.
+Please **do not** open public GitHub issues for security vulnerabilities.
 
-The opening of automatic, LLM-created, non-supervised PR's is highly discouraged.
+Instead, please report security vulnerabilities using GitHub's **[Private Vulnerability Reporting](https://github.com/markaltmann/caddy-image/security/advisories/new)** feature.
+
+Alternatively, contact the maintainer directly via email: `mark@altmann.it`.
+
+Keep in mind that we use OSV-Scanner, OpenSSF Scorecard, and supply-chain hardening to remediate possible problems. The opening of automatic, LLM-created, non-supervised PRs is highly discouraged.

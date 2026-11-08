@@ -1,5 +1,6 @@
 # global settings
 {
+	admin off
 	# ACME INWX DNS Provider
 	acme_dns inwx {
 		username "{$INWX_USERNAME}"
@@ -15,6 +16,18 @@
 		#appsec_url "{$CROWDSEC_APPSEC_URL}"
 		#disable_streaming
 		#enable_hard_fails
+	}
+}
+
+# Defensive HTTP security headers
+(security_headers) {
+	header {
+		Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
+		X-Content-Type-Options "nosniff"
+		X-Frame-Options "DENY"
+		Referrer-Policy "strict-origin-when-cross-origin"
+		Permissions-Policy "camera=(), microphone=(), geolocation=()"
+		-Server
 	}
 }
 

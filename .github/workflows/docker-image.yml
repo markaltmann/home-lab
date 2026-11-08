@@ -22,6 +22,8 @@ jobs:
     permissions:
       contents: read
       packages: write
+      id-token: write
+      attestations: write
 
     steps:
       - name: Harden the runner (Audit all outbound calls)
@@ -37,6 +39,7 @@ jobs:
       - name: Parse refs.txt for component versions
         id: refs
         run: |
+          echo "BUILD_DATE=$(date -u +"%Y-%m-%dT%H:%M:%SZ")" >> $GITHUB_ENV
           while IFS== read -r key value; do
             echo "$key=$value" >> $GITHUB_ENV
             if [ "$key" = "caddy-image" ]; then
@@ -44,21 +47,41 @@ jobs:
             fi
           done < refs.txt
 
+      - name: Scan Dockerfile with Trivy
+        uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
+        with:
+          scan-type: 'config'
+          scan-ref: './Caddy'
+          format: 'table'
+          severity: 'CRITICAL,HIGH'
+
       - name: Build and push multi-arch image with Buildah
+        id: build-image
         uses: redhat-actions/buildah-build@7a95fa7ee0f02d552a32753e7414641a04307056 # v2.13
         with:
           image: ghcr.io/${{ github.repository }}/caddy
-          tags: latest
+          tags: |
+            latest
+            ${{ env.caddy-image }}
+            ${{ env.caddy-version-no-v }}
           containerfiles: ./Caddy/Dockerfile.caddy
           platforms: linux/amd64,linux/arm64
           oci: true
-          push: true
+          push: ${{ github.event_name != 'pull_request' }}
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
           build-args: |
             VERSION=${{ env.caddy-version-no-v }}
             CADDY_IMAGE_VERSION=${{ env.caddy-image }}
-            BUILD_DATE=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+            BUILD_DATE=${{ env.BUILD_DATE }}
             GITHUB_SHA=${{ github.sha }}
             CADDY_CROWDSEC_BOUNCER_VERSION=${{ env.caddy-crowdsec-bouncer }}
             CADDY_DNS_INWX_VERSION=${{ env.caddy-dns-inwx }}
+
+      - name: Attest Build Provenance
+        if: github.event_name != 'pull_request'
+        uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8 # v4.2.2
+        with:
+          subject-name: ghcr.io/${{ github.repository }}/caddy
+          subject-digest: ${{ steps.build-image.outputs.image-digest }}
+          push-to-registry: true

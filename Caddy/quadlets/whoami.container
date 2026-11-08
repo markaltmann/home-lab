@@ -9,6 +9,9 @@ ContainerName=whoami
 Hostname=whoami
 Restart=always
 Network=caddynet.network
+ReadOnly=true
+NoNewPrivileges=true
+DropCapability=ALL
 
 [Service]
 Restart=always

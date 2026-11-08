@@ -105,6 +105,7 @@ Whenever modifying or creating YAML (`.yml`, `.yaml`) or JSON (`.json`) files (i
 
 - OSV-Scanner is configured via `.github/workflows/osv-scanner.yml` (scheduled + PR checks).
 - OpenSSF Scorecard runs via `.github/workflows/scorecard.yml`.
+- Secret scanning runs via `.github/workflows/secret-scanning.yml` (TruffleHog).
 - Dependabot config exists at `.github/dependabot.yml`.
 
 ## Common agent tasks

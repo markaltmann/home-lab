@@ -1,13 +1,18 @@
 # syntax=docker/dockerfile:1.4
-ARG VERSION=2.11.3
+ARG VERSION=2.11.7
+ARG CADDY_CROWDSEC_BOUNCER_VERSION=v0.14.1
+ARG CADDY_DNS_INWX_VERSION=v0.4.1
 
 FROM caddy:${VERSION}-builder AS builder
 
-RUN xcaddy build \
-    --with github.com/caddy-dns/inwx \
-    --with github.com/hslatman/caddy-crowdsec-bouncer/crowdsec
+ARG CADDY_CROWDSEC_BOUNCER_VERSION
+ARG CADDY_DNS_INWX_VERSION
 
-FROM cgr.dev/chainguard/wolfi-base
+RUN xcaddy build \
+    --with github.com/caddy-dns/inwx@${CADDY_DNS_INWX_VERSION} \
+    --with github.com/hslatman/caddy-crowdsec-bouncer/crowdsec@${CADDY_CROWDSEC_BOUNCER_VERSION}
+
+FROM cgr.dev/chainguard/wolfi-base:latest
 
 ARG CADDY_IMAGE_VERSION
 ARG BUILD_DATE
@@ -36,7 +41,7 @@ RUN apk add --no-cache libcap-utils && \
     setcap cap_net_bind_service=+ep /usr/bin/caddy && \
     apk del libcap-utils
 
-EXPOSE 80 443
+EXPOSE 80 443 443/udp
 
 USER 65532:65532
 

@@ -24,8 +24,6 @@ services:
     image: "containous/whoami"
     container_name: "whoami"
     hostname: "whoami"
-    ports:
-      - "8080:80"
     networks:
       - caddynet
 
