@@ -1,37 +1,41 @@
 # syntax=docker/dockerfile:1.4
-ARG VERSION=2.11.7
-ARG CADDY_CROWDSEC_BOUNCER_VERSION=v0.14.1
-ARG CADDY_DNS_INWX_VERSION=v0.4.1
+ARG VERSION=2.11.9
 
 FROM caddy:${VERSION}-builder AS builder
 
-ARG CADDY_CROWDSEC_BOUNCER_VERSION
-ARG CADDY_DNS_INWX_VERSION
+ARG CADDY_DNS_INWX_COMMIT
+ARG CADDY_CROWDSEC_BOUNCER_COMMIT
 
 RUN xcaddy build \
-    --with github.com/caddy-dns/inwx@${CADDY_DNS_INWX_VERSION} \
-    --with github.com/hslatman/caddy-crowdsec-bouncer/crowdsec@${CADDY_CROWDSEC_BOUNCER_VERSION}
+    --with github.com/caddy-dns/inwx@${CADDY_DNS_INWX_COMMIT} \
+    --with github.com/hslatman/caddy-crowdsec-bouncer/crowdsec@${CADDY_CROWDSEC_BOUNCER_COMMIT}
 
-FROM cgr.dev/chainguard/wolfi-base:latest
+FROM cgr.dev/chainguard/wolfi-base
 
-ARG CADDY_IMAGE_VERSION
+ARG CADDY_VERSION
+ARG CADDY_COMMIT
 ARG BUILD_DATE
 ARG GITHUB_SHA
 ARG CADDY_CROWDSEC_BOUNCER_VERSION
+ARG CADDY_CROWDSEC_BOUNCER_COMMIT
 ARG CADDY_DNS_INWX_VERSION
+ARG CADDY_DNS_INWX_COMMIT
 
 LABEL org.opencontainers.image.title="caddy"
 LABEL org.opencontainers.image.description="Personal Caddy Container Image with INWX and Crowdsec modules included."
-LABEL org.opencontainers.image.url="ghcr.io/markaltmann/caddy-image/caddy:latest"
-LABEL org.opencontainers.image.source="https://github.com/markaltmann/caddy-image"
-LABEL org.opencontainers.image.version="${CADDY_IMAGE_VERSION}"
+LABEL org.opencontainers.image.url="ghcr.io/markaltmann/home-lab/caddy:latest"
+LABEL org.opencontainers.image.source="https://github.com/markaltmann/home-lab"
+LABEL org.opencontainers.image.version="${CADDY_VERSION}"
 LABEL org.opencontainers.image.created="${BUILD_DATE}"
 LABEL org.opencontainers.image.revision="${GITHUB_SHA}"
 LABEL org.opencontainers.image.licenses="The Unlicense"
 LABEL org.opencontainers.image.authors="Mark Altmann <mark@altmann.it>"
+LABEL org.opencontainers.image.component.caddy="${CADDY_VERSION}"
+LABEL org.opencontainers.image.component.caddy.commit="${CADDY_COMMIT}"
 LABEL org.opencontainers.image.component.caddy-crowdsec-bouncer="${CADDY_CROWDSEC_BOUNCER_VERSION}"
+LABEL org.opencontainers.image.component.caddy-crowdsec-bouncer.commit="${CADDY_CROWDSEC_BOUNCER_COMMIT}"
 LABEL org.opencontainers.image.component.caddy-dns-inwx="${CADDY_DNS_INWX_VERSION}"
-LABEL org.opencontainers.image.component.caddy-image="${CADDY_IMAGE_VERSION}"
+LABEL org.opencontainers.image.component.caddy-dns-inwx.commit="${CADDY_DNS_INWX_COMMIT}"
 
 COPY --from=builder /usr/bin/caddy /usr/bin/caddy
 
@@ -41,7 +45,7 @@ RUN apk add --no-cache libcap-utils && \
     setcap cap_net_bind_service=+ep /usr/bin/caddy && \
     apk del libcap-utils
 
-EXPOSE 80 443 443/udp
+EXPOSE 80 443
 
 USER 65532:65532
 

@@ -28,9 +28,14 @@ There is **no application source code** here; the “product” is the container
 `refs.txt` is parsed by the build workflow and used to set build args/labels.
 
 Format observed in `refs.txt`:
+- `caddy=vX.Y.Z`
+- `caddy-commit=<git-sha>`
 - `caddy-crowdsec-bouncer=vX.Y.Z`
+- `caddy-crowdsec-bouncer-commit=<git-sha>`
 - `caddy-dns-inwx=vX.Y.Z`
-- `caddy-image=vX.Y.Z`
+- `caddy-dns-inwx-commit=<git-sha>`
+
+Each component has both a semantic version tag and an immutable git commit SHA. The commit SHAs are resolved by the scheduled workflow using `git ls-remote --tags` and are used to pin `xcaddy build --with module@<sha>` for reproducible, tamper-resistant builds (SLSA supply-chain hardening).
 
 The build workflow `docker-image.yml` is configured to trigger on changes to `refs.txt`.
 
@@ -40,7 +45,7 @@ In `.github/workflows/docker-image.yml`:
 - Parses `refs.txt` into environment variables.
 - Builds `./Caddy/Dockerfile.caddy` via `redhat-actions/buildah-build@v2`.
 - Targets platforms: `linux/amd64,linux/arm64`.
-- Pushes to `ghcr.io/${{ github.repository }}/caddy:latest`.
+- Pushes to `ghcr.io/${{ github.repository }}/caddy:latest` (i.e. `ghcr.io/markaltmann/home-lab/caddy:latest`).
 
 ### Scheduled updates (CI)
 
@@ -77,7 +82,7 @@ Note: For quick local testing we recommend using `podman-compose` (see `Caddy/po
 
 Long-term run mode (note for agents):
 
-- **Production / long-run:** podman quadlets are the canonical method — see the ready-to-use files in `Caddy/quadlets/` and the verification checklist in the "Long-term / production (systemd quadlets)" section of [README.md](file:///Users/markaltmann/Git/caddy-image/README.md#long-term--production-systemd-quadlets). Deployment sketch: copy the quadlet files to `/etc/quadlet.d/` and site configs to `/etc/caddy/`, fill `/etc/caddy/.env`, then `systemctl daemon-reload && systemctl enable --now caddynet.service whoami.service caddy.service` (network → upstreams → Caddy).
+- **Production / long-run:** podman quadlets are the canonical method — see the ready-to-use files in `Caddy/quadlets/` and the verification checklist in the "Long-term / production (systemd quadlets)" section of [README.md](README.md#long-term--production-systemd-quadlets). Deployment sketch: copy the quadlet files to `/etc/quadlet.d/` and site configs to `/etc/caddy/`, fill `/etc/caddy/.env`, then `systemctl daemon-reload && systemctl enable --now caddynet.service whoami.service caddy.service` (network → upstreams → Caddy).
 - `podman generate systemd` is legacy — don't use it.
 - Development / test: use `podman-compose` or `podman run` as needed to iterate quickly.
 

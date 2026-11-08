@@ -1,4 +1,7 @@
-# References for build. Test for changes Push
-caddy-crowdsec-bouncer=v0.14.1
+# References for build (tags and immutable commit hashes).
+caddy=v2.11.9
+caddy-commit=0d98caea58f794f88e709b1bef2880996a471bca
+caddy-crowdsec-bouncer=v0.15.0
+caddy-crowdsec-bouncer-commit=4a6ce1d3094dbfd270fecf2a91aaab81663d0cb4
 caddy-dns-inwx=v0.4.1
-caddy-image=v2.11.7
+caddy-dns-inwx-commit=0f77239a2ff4144dcbae5339535cfe4f539c3143

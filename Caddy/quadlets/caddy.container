@@ -4,7 +4,7 @@ After=network-online.target
 Wants=network-online.target
 
 [Container]
-Image=ghcr.io/markaltmann/caddy-image/caddy:latest
+Image=ghcr.io/markaltmann/home-lab/caddy:latest
 ContainerName=caddy
 Hostname=caddy
 Restart=always

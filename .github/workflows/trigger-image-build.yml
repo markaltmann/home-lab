@@ -9,7 +9,7 @@ permissions:
 
 jobs:
   check-and-update:
-    runs-on: ubuntu-latest # Enthält schon Podman vorinstalliert
+    runs-on: ubuntu-latest
     permissions:
       contents: write # Erforderlich zum Pushen von Änderungen
     steps:
@@ -20,55 +20,40 @@ jobs:
 
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
-      - name: Get latest go dependencies versions
-        id: go
+      - name: Get latest upstream versions and commit hashes
+        id: refs
         run: |
-          # Get latest tag for caddy-crowdsec-bouncer
-          tag1=$(git ls-remote --tags https://github.com/hslatman/caddy-crowdsec-bouncer.git | \
-            awk -F/ '{print $3}' | grep -E '^v?[0-9]+\.[0-9]+\.[0-9]+$' | sort -V | tail -n1)
-          # Get latest tag for caddy-dns-inwx
-          tag2=$(git ls-remote --tags https://github.com/caddy-dns/inwx.git | \
-            awk -F/ '{print $3}' | grep -E '^v?[0-9]+\.[0-9]+\.[0-9]+$' | sort -V | tail -n1)
-          echo "caddy-crowdsec-bouncer=$tag1" >> $GITHUB_OUTPUT
-          echo "caddy-dns-inwx=$tag2" >> $GITHUB_OUTPUT
+          resolve_ref() {
+            local repo="$1"
+            local tag
+            local sha
+            tag=$(git ls-remote --tags "$repo" | awk -F/ '{print $3}' | grep -E '^v?[0-9]+\.[0-9]+\.[0-9]+$' | sort -V | tail -n1)
+            sha=$(git ls-remote --tags "$repo" "refs/tags/${tag}" "refs/tags/${tag}^{}" | tail -n1 | awk '{print $1}')
+            echo "$tag $sha"
+          }
 
-      - name: Get latest container image version label with Podman # Does not work to get the labels. Check the command.
-        id: image
-        run: |
-          podman pull docker.io/caddy:builder
-          version=$(podman inspect --format '{{range .Config.Env}}{{if (eq (index (split . "=") 0) "CADDY_VERSION")}}{{index (split . "=") 1}}{{end}}{{end}}' docker.io/caddy:builder)
-          echo "caddy-image=$version" >> $GITHUB_OUTPUT
+          read -r bouncer_tag bouncer_sha < <(resolve_ref "https://github.com/hslatman/caddy-crowdsec-bouncer.git")
+          read -r inwx_tag inwx_sha < <(resolve_ref "https://github.com/caddy-dns/inwx.git")
+          read -r caddy_tag caddy_sha < <(resolve_ref "https://github.com/caddyserver/caddy.git")
 
-      - name: Compare and update refs.txt if needed
+          echo "bouncer-tag=$bouncer_tag" >> $GITHUB_OUTPUT
+          echo "bouncer-sha=$bouncer_sha" >> $GITHUB_OUTPUT
+          echo "inwx-tag=$inwx_tag" >> $GITHUB_OUTPUT
+          echo "inwx-sha=$inwx_sha" >> $GITHUB_OUTPUT
+          echo "caddy-tag=$caddy_tag" >> $GITHUB_OUTPUT
+          echo "caddy-sha=$caddy_sha" >> $GITHUB_OUTPUT
+
+      - name: Update refs.txt
         id: update
-        env:
-          BOUNCER_VERSION: ${{ steps.go.outputs.caddy-crowdsec-bouncer }}
-          INWX_VERSION: ${{ steps.go.outputs.caddy-dns-inwx }}
-          CADDY_VERSION: ${{ steps.image.outputs.caddy-image }}
         run: |
           file="refs.txt"
-          touch "$file"
-
-          # Clean up and update caddy-crowdsec-bouncer
-          sed -i '/^caddy-crowdsec-bouncer=/d' "$file"
-          if [ -n "$BOUNCER_VERSION" ]; then
-            echo "caddy-crowdsec-bouncer=$BOUNCER_VERSION" >> "$file"
-          fi
-
-          # Clean up and update caddy-dns-inwx
-          sed -i '/^caddy-dns-inwx=/d' "$file"
-          if [ -n "$INWX_VERSION" ]; then
-            echo "caddy-dns-inwx=$INWX_VERSION" >> "$file"
-          fi
-
-          # Clean up and update caddy-image
-          sed -i '/^caddy-image=/d' "$file"
-          if [ -n "$CADDY_VERSION" ]; then
-            echo "caddy-image=$CADDY_VERSION" >> "$file"
-          fi
-
-          # Remove empty lines from refs.txt
-          sed -i '/^$/d' "$file"
+          printf '# References for build (tags and immutable commit hashes).\n' > "$file"
+          printf 'caddy=%s\n' "${{ steps.refs.outputs.caddy-tag }}" >> "$file"
+          printf 'caddy-commit=%s\n' "${{ steps.refs.outputs.caddy-sha }}" >> "$file"
+          printf 'caddy-crowdsec-bouncer=%s\n' "${{ steps.refs.outputs.bouncer-tag }}" >> "$file"
+          printf 'caddy-crowdsec-bouncer-commit=%s\n' "${{ steps.refs.outputs.bouncer-sha }}" >> "$file"
+          printf 'caddy-dns-inwx=%s\n' "${{ steps.refs.outputs.inwx-tag }}" >> "$file"
+          printf 'caddy-dns-inwx-commit=%s\n' "${{ steps.refs.outputs.inwx-sha }}" >> "$file"
 
       - name: Commit and push refs.txt
         run: |

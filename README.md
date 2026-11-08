@@ -1,11 +1,11 @@
-# HomeLab — Caddy container image
+# HomeLab
 
-Personal Caddy container image that bundles a couple of extra modules (INWX DNS provider and CrowdSec bouncer) and example configuration to run privacy-minded, self-hosted services.
+Personal homelab infrastructure, services configuration, and custom Caddy container image bundling INWX DNS and CrowdSec bouncer modules.
 
-[![Scorecard supply-chain security](https://github.com/markaltmann/caddy-image/actions/workflows/scorecard.yml/badge.svg)](https://github.com/markaltmann/caddy-image/actions/workflows/scorecard.yml) [![Build Multi-Arch Caddy Image](https://github.com/markaltmann/caddy-image/actions/workflows/docker-image.yml/badge.svg)](https://github.com/markaltmann/caddy-image/actions/workflows/docker-image.yml)
+[![Scorecard supply-chain security](https://github.com/markaltmann/home-lab/actions/workflows/scorecard.yml/badge.svg)](https://github.com/markaltmann/home-lab/actions/workflows/scorecard.yml) [![Build Multi-Arch Caddy Image](https://github.com/markaltmann/home-lab/actions/workflows/docker-image.yml/badge.svg)](https://github.com/markaltmann/home-lab/actions/workflows/docker-image.yml)
 
 Quick links
-- Repository image: `ghcr.io/markaltmann/caddy-image/caddy:latest`
+- Repository image: `ghcr.io/markaltmann/home-lab/caddy:latest`
 - Build CI: `.github/workflows/docker-image.yml`
 - Version source: `refs.txt`
 

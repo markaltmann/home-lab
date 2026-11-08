@@ -11,7 +11,7 @@
 
 Please **do not** open public GitHub issues for security vulnerabilities.
 
-Instead, please report security vulnerabilities using GitHub's **[Private Vulnerability Reporting](https://github.com/markaltmann/caddy-image/security/advisories/new)** feature.
+Instead, please report security vulnerabilities using GitHub's **[Private Vulnerability Reporting](https://github.com/markaltmann/home-lab/security/advisories/new)** feature.
 
 Alternatively, contact the maintainer directly via email: `mark@altmann.it`.
 
